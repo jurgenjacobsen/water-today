@@ -26,23 +26,10 @@ async function checkDailyReset(): Promise<void> {
 
 // ── Alarm management ──────────────────────────────────────────────────────────
 
-function padTimeSegment(value: number): string {
-  return String(value).padStart(2, '0');
-}
-
-function formatBadgeText(msRemaining: number): string {
-  const safeMsRemaining = Math.max(msRemaining, 0);
-  const totalSeconds = Math.ceil(safeMsRemaining / 1000);
-
-  if (totalSeconds >= 3600) {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    return `${padTimeSegment(hours)}:${padTimeSegment(minutes)}`;
-  }
-
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${padTimeSegment(minutes)}:${padTimeSegment(seconds)}`;
+function formatGoalCompletionBadgeText(intake: number, goal: number): string {
+  const safeGoal = goal > 0 ? goal : DEFAULT_GOAL;
+  const pct = Math.max(0, Math.round((intake / safeGoal) * 100));
+  return `${Math.min(pct, 999)}%`;
 }
 
 function stopBadgeTicker(): void {
@@ -62,12 +49,13 @@ async function updateReminderBadge(): Promise<void> {
     return;
   }
 
-  const msRemaining = reminderAlarm.scheduledTime - Date.now();
-  const badgeText = formatBadgeText(msRemaining);
+  const { intake = 0 } = await chrome.storage.local.get({ intake: 0 }) as { intake: number };
+  const { goal = DEFAULT_GOAL } = await chrome.storage.sync.get({ goal: DEFAULT_GOAL }) as { goal: number };
+  const badgeText = formatGoalCompletionBadgeText(intake, goal);
   await chrome.action.setBadgeBackgroundColor({ color: '#1565c0' });
   await chrome.action.setBadgeText({ text: badgeText });
   await chrome.action.setTitle({
-    title: `Water Today - next reminder in ${badgeText}`,
+    title: `Water Today - ${badgeText} of daily goal completed`,
   });
 }
 
