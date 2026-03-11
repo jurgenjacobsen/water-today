@@ -1,34 +1,39 @@
-name: Create Production Release
+name: Smart Release (Synced Version)
 
 on:
   push:
-    tags:
-      - 'v*' # Triggers on v1.0, v2.1.0, etc.
+    branches:
+      - main  # Triggers on every push to main, or change to 'tags' if preferred
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Optional: If you use Webpack/Vite, add 'npm install' and 'npm run build' here
-      
-      - name: Zip Extension Assets
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Extract Version from Manifest
+        id: get_version
         run: |
-          # Creates a zip excluding git files and hidden folders
-          zip -r water-today-extension.zip . -x "*.git*" ".github/*" "node_modules/*"
+          VERSION=$(node get-version.js)
+          echo "EXTRACTED_VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Zip Extension
+        run: |
+          # Use the extracted version in the filename
+          zip -r "water-today-v${{ steps.get_version.outputs.EXTRACTED_VERSION }}.zip" . -x "*.git*" ".github/*" "node_modules/*" "get-version.js"
 
       - name: Create GitHub Release
-        id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          files: water-today-extension.zip
-          name: Release ${{ github.ref_name }}
-          body: |
-            Automated production build for Water Today extension.
-            Version: ${{ github.ref_name }}
-          draft: false
-          prerelease: false
+          tag_name: v${{ steps.get_version.outputs.EXTRACTED_VERSION }}
+          name: Release v${{ steps.get_version.outputs.EXTRACTED_VERSION }}
+          files: "water-today-v${{ steps.get_version.outputs.EXTRACTED_VERSION }}.zip"
+          body: "Automated build for version ${{ steps.get_version.outputs.EXTRACTED_VERSION }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
