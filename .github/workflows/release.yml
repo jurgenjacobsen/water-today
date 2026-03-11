@@ -1,9 +1,13 @@
-name: Smart Release (Synced Version)
+name: Release
 
 on:
   push:
     branches:
-      - main  # Triggers on every push to main, or change to 'tags' if preferred
+      - main
+
+# Fixes the Node.js 20 deprecation warning
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-and-release:
@@ -15,17 +19,24 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24' # Upgraded to 24
+
+      - name: Debug - List Files
+        run: ls -R # This shows us if manifest.json and get-version.js exist
 
       - name: Extract Version from Manifest
         id: get_version
         run: |
+          # Ensure the script exists before running
+          if [ ! -f "get-version.js" ]; then
+            echo "Error: get-version.js not found in root!"
+            exit 1
+          fi
           VERSION=$(node get-version.js)
           echo "EXTRACTED_VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Zip Extension
         run: |
-          # Use the extracted version in the filename
           zip -r "water-today-v${{ steps.get_version.outputs.EXTRACTED_VERSION }}.zip" . -x "*.git*" ".github/*" "node_modules/*" "get-version.js"
 
       - name: Create GitHub Release
@@ -35,5 +46,7 @@ jobs:
           name: Release v${{ steps.get_version.outputs.EXTRACTED_VERSION }}
           files: "water-today-v${{ steps.get_version.outputs.EXTRACTED_VERSION }}.zip"
           body: "Automated build for version ${{ steps.get_version.outputs.EXTRACTED_VERSION }}"
+          # This prevents failing if the release already exists
+          make_latest: true 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
