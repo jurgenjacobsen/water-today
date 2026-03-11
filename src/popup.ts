@@ -3,6 +3,31 @@ export {};
 
 // Circumference of the SVG progress ring (r = 50)
 const CIRCUMFERENCE = 2 * Math.PI * 50; // ≈ 314.159
+const CLICK_VOLUME = 0.45;
+const GOAL_VOLUME = 0.75;
+
+const clickSoundTemplate = createPreloadedSound('assets/click.mp3', CLICK_VOLUME);
+const goalSoundTemplate = createPreloadedSound('assets/chime.mp3', GOAL_VOLUME);
+
+function createPreloadedSound(assetPath: string, volume: number): HTMLAudioElement {
+  const audio = new Audio(chrome.runtime.getURL(assetPath));
+  audio.preload = 'auto';
+  audio.volume = volume;
+  audio.load();
+  return audio;
+}
+
+function playPreparedSound(template: HTMLAudioElement): void {
+  const audio = template.cloneNode(true) as HTMLAudioElement;
+  audio.volume = template.volume;
+  audio.currentTime = 0;
+  audio.play().catch(() => { /* ignore if audio blocked */ });
+}
+
+function warmUpPopupAudio(): void {
+  clickSoundTemplate.load();
+  goalSoundTemplate.load();
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -89,17 +114,13 @@ async function updateNextReminder(): Promise<void> {
 
 function playClickSound(): void {
   try {
-    const audio = new Audio(chrome.runtime.getURL('assets/click.mp3'));
-    audio.volume = 0.45;
-    audio.play().catch(() => { /* ignore if audio blocked */ });
+    playPreparedSound(clickSoundTemplate);
   } catch (_) { /* ignore */ }
 }
 
 function playGoalSound(): void {
   try {
-    const audio = new Audio(chrome.runtime.getURL('assets/chime.mp3'));
-    audio.volume = 0.75;
-    audio.play().catch(() => { /* ignore if audio blocked */ });
+    playPreparedSound(goalSoundTemplate);
   } catch (_) { /* ignore */ }
 }
 
@@ -140,6 +161,10 @@ async function init(): Promise<void> {
     soundsEnabled,
     keepRemindingAfterGoal,
   } = await loadState();
+
+  // Warm audio on popup open and again on the first user gesture.
+  warmUpPopupAudio();
+  document.addEventListener('pointerdown', warmUpPopupAudio, { once: true });
 
   renderProgress(intake, goal);
   await updateNextReminder();

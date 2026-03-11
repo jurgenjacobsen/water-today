@@ -1,5 +1,26 @@
 // Circumference of the SVG progress ring (r = 50)
 const CIRCUMFERENCE = 2 * Math.PI * 50; // ≈ 314.159
+const CLICK_VOLUME = 0.45;
+const GOAL_VOLUME = 0.75;
+const clickSoundTemplate = createPreloadedSound('assets/click.mp3', CLICK_VOLUME);
+const goalSoundTemplate = createPreloadedSound('assets/chime.mp3', GOAL_VOLUME);
+function createPreloadedSound(assetPath, volume) {
+    const audio = new Audio(chrome.runtime.getURL(assetPath));
+    audio.preload = 'auto';
+    audio.volume = volume;
+    audio.load();
+    return audio;
+}
+function playPreparedSound(template) {
+    const audio = template.cloneNode(true);
+    audio.volume = template.volume;
+    audio.currentTime = 0;
+    audio.play().catch(() => { });
+}
+function warmUpPopupAudio() {
+    clickSoundTemplate.load();
+    goalSoundTemplate.load();
+}
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function getToday() {
     return new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
@@ -64,17 +85,13 @@ async function updateNextReminder() {
 // ── Audio ─────────────────────────────────────────────────────────────────────
 function playClickSound() {
     try {
-        const audio = new Audio(chrome.runtime.getURL('assets/click.mp3'));
-        audio.volume = 0.45;
-        audio.play().catch(() => { });
+        playPreparedSound(clickSoundTemplate);
     }
     catch (_) { /* ignore */ }
 }
 function playGoalSound() {
     try {
-        const audio = new Audio(chrome.runtime.getURL('assets/chime.mp3'));
-        audio.volume = 0.75;
-        audio.play().catch(() => { });
+        playPreparedSound(goalSoundTemplate);
     }
     catch (_) { /* ignore */ }
 }
@@ -102,6 +119,9 @@ async function addWater(amount) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
     const { intake, goal, interval, notificationsEnabled, soundsEnabled, keepRemindingAfterGoal, } = await loadState();
+    // Warm audio on popup open and again on the first user gesture.
+    warmUpPopupAudio();
+    document.addEventListener('pointerdown', warmUpPopupAudio, { once: true });
     renderProgress(intake, goal);
     await updateNextReminder();
     // Populate settings fields
