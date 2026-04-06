@@ -15,7 +15,14 @@
         <img src="assets/icon.svg" class="logo" alt="Water drop" />
         <h1>Water Today</h1>
       </div>
-      <button class="icon-btn" id="settingsToggle" title="Settings" aria-label="Open settings">⚙️</button>
+      <button class="icon-btn" id="settingsToggle" title="Settings" aria-label="Open settings" type="button">
+        <svg class="icon-btn__icon icon-btn__icon--open" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19.14 12.94c.04-.31.06-.62.06-.94s-.02-.63-.06-.94l2.03-1.58a.75.75 0 0 0 .18-.95l-1.92-3.32a.75.75 0 0 0-.91-.33l-2.39.96a7.08 7.08 0 0 0-1.62-.94l-.36-2.54A.75.75 0 0 0 12.42 1h-3.84a.75.75 0 0 0-.74.64l-.36 2.54c-.57.21-1.1.51-1.62.94l-2.39-.96a.75.75 0 0 0-.91.33L.64 7.81a.75.75 0 0 0 .18.95l2.03 1.58c-.04.31-.06.62-.06.94s.02.63.06.94L.82 13.8a.75.75 0 0 0-.18.95l1.92 3.32c.19.33.59.47.91.33l2.39-.96c.51.42 1.05.76 1.62.94l.36 2.54c.06.36.37.64.74.64h3.84c.37 0 .68-.27.74-.64l.36-2.54c.57-.18 1.1-.52 1.62-.94l2.39.96c.33.13.72 0 .91-.33l1.92-3.32a.75.75 0 0 0-.18-.95l-2.03-1.58ZM10.5 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z" />
+        </svg>
+        <svg class="icon-btn__icon icon-btn__icon--close" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18.3 5.71a1 1 0 0 0-1.41 0L12 10.59 7.11 5.7a1 1 0 0 0-1.41 1.42L10.59 12l-4.89 4.89a1 1 0 1 0 1.41 1.42L12 13.41l4.89 4.89a1 1 0 0 0 1.41-1.42L13.41 12l4.89-4.89a1 1 0 0 0 0-1.4Z" />
+        </svg>
+      </button>
     </header>
 
     <!-- Main content -->
@@ -117,7 +124,12 @@
         </label>
       </div>
 
-      <button class="save-btn" id="saveSettings">Save Settings</button>
+      <button class="save-btn" id="saveSettings" type="button">
+        <svg class="save-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4ZM12 19a3 3 0 1 1 0-6 3 3 0 0 1 0 6Zm-4-12V5h6v2H8Z" />
+        </svg>
+        <span>Save Settings</span>
+      </button>
       <p class="save-feedback" id="saveFeedback" aria-live="polite"></p>
     </section>
 

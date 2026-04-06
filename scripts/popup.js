@@ -119,6 +119,7 @@ async function addWater(amount) {
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
     const { intake, goal, interval, notificationsEnabled, soundsEnabled, keepRemindingAfterGoal, } = await loadState();
+    let currentInterval = interval;
     // Warm audio on popup open and again on the first user gesture.
     warmUpPopupAudio();
     document.addEventListener('pointerdown', warmUpPopupAudio, { once: true });
@@ -159,7 +160,8 @@ async function init() {
     settingsToggle.addEventListener('click', () => {
         const isOpen = settingsPanel.classList.toggle('open');
         settingsPanel.setAttribute('aria-hidden', String(!isOpen));
-        settingsToggle.textContent = isOpen ? '✕' : '⚙️';
+        settingsToggle.classList.toggle('is-open', isOpen);
+        settingsToggle.setAttribute('aria-label', isOpen ? 'Close settings' : 'Open settings');
     });
     wireUiSound(document.getElementById('saveSettings'));
     wireUiSound(document.getElementById('notificationsEnabled'), 'change');
@@ -183,8 +185,11 @@ async function init() {
             soundsEnabled: newSoundsEnabled,
             keepRemindingAfterGoal: newKeepRemindingAfterGoal,
         });
-        // Ask background to reschedule the alarm
-        chrome.runtime.sendMessage({ action: 'reschedule', interval: newInterval });
+        if (newInterval !== currentInterval) {
+            // Ask background to reschedule the alarm only when the interval changes
+            chrome.runtime.sendMessage({ action: 'reschedule', interval: newInterval });
+            currentInterval = newInterval;
+        }
         const { intake: current = 0 } = await chrome.storage.local.get({ intake: 0 });
         renderProgress(current, newGoal);
         const fb = document.getElementById('saveFeedback');
