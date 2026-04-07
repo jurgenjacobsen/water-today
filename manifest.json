@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Water Today",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple extension to remind you to drink water throughout the day.",
   "permissions": [
     "alarms",

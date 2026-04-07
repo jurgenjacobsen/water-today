@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "bundle": "powershell -ExecutionPolicy Bypass -File ./automation/package.ps1"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
