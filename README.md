@@ -100,10 +100,9 @@ From the popup settings panel you can configure:
 
 ## Data & Privacy
 
-Water Today stores all data locally in Chrome storage:
+Water Today stores all data in Chrome sync storage:
 
-- `chrome.storage.local`: intake amount and daily reset marker
-- `chrome.storage.sync`: settings and preferences
+- `chrome.storage.sync`: intake amount, daily reset marker, settings, and preferences
 
 No external backend is used.
 

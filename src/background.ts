@@ -18,9 +18,9 @@ function getToday(): string {
 
 async function checkDailyReset(): Promise<void> {
   const today = getToday();
-  const { lastReset = '' } = await chrome.storage.local.get({ lastReset: '' }) as { lastReset: string };
+  const { lastReset = '' } = await chrome.storage.sync.get({ lastReset: '' }) as { lastReset: string };
   if (lastReset !== today) {
-    await chrome.storage.local.set({ intake: 0, lastReset: today });
+    await chrome.storage.sync.set({ intake: 0, lastReset: today });
   }
 }
 
@@ -49,7 +49,7 @@ async function updateReminderBadge(): Promise<void> {
     return;
   }
 
-  const { intake = 0 } = await chrome.storage.local.get({ intake: 0 }) as { intake: number };
+  const { intake = 0 } = await chrome.storage.sync.get({ intake: 0 }) as { intake: number };
   const { goal = DEFAULT_GOAL } = await chrome.storage.sync.get({ goal: DEFAULT_GOAL }) as { goal: number };
   const badgeText = formatGoalCompletionBadgeText(intake, goal);
   await chrome.action.setBadgeBackgroundColor({ color: '#1565c0' });
@@ -155,7 +155,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
   await checkDailyReset();
 
-  const { intake = 0 } = await chrome.storage.local.get({ intake: 0 }) as { intake: number };
+  const { intake = 0 } = await chrome.storage.sync.get({ intake: 0 }) as { intake: number };
   const {
     goal = DEFAULT_GOAL,
     notificationsEnabled = DEFAULT_NOTIFICATIONS_ENABLED,

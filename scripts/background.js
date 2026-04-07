@@ -12,9 +12,9 @@ function getToday() {
 }
 async function checkDailyReset() {
     const today = getToday();
-    const { lastReset = '' } = await chrome.storage.local.get({ lastReset: '' });
+    const { lastReset = '' } = await chrome.storage.sync.get({ lastReset: '' });
     if (lastReset !== today) {
-        await chrome.storage.local.set({ intake: 0, lastReset: today });
+        await chrome.storage.sync.set({ intake: 0, lastReset: today });
     }
 }
 // ── Alarm management ──────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ async function updateReminderBadge() {
         await chrome.action.setTitle({ title: 'Water Today' });
         return;
     }
-    const { intake = 0 } = await chrome.storage.local.get({ intake: 0 });
+    const { intake = 0 } = await chrome.storage.sync.get({ intake: 0 });
     const { goal = DEFAULT_GOAL } = await chrome.storage.sync.get({ goal: DEFAULT_GOAL });
     const badgeText = formatGoalCompletionBadgeText(intake, goal);
     await chrome.action.setBadgeBackgroundColor({ color: '#1565c0' });
@@ -121,7 +121,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name !== ALARM_NAME)
         return;
     await checkDailyReset();
-    const { intake = 0 } = await chrome.storage.local.get({ intake: 0 });
+    const { intake = 0 } = await chrome.storage.sync.get({ intake: 0 });
     const { goal = DEFAULT_GOAL, notificationsEnabled = DEFAULT_NOTIFICATIONS_ENABLED, soundsEnabled = DEFAULT_SOUNDS_ENABLED, keepRemindingAfterGoal = DEFAULT_KEEP_REMINDING_AFTER_GOAL, } = await chrome.storage.sync.get({
         goal: DEFAULT_GOAL,
         notificationsEnabled: DEFAULT_NOTIFICATIONS_ENABLED,

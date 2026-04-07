@@ -27,14 +27,14 @@ function getToday() {
 }
 async function ensureDailyReset() {
     const today = getToday();
-    const { lastReset = '' } = await chrome.storage.local.get({ lastReset: '' });
+    const { lastReset = '' } = await chrome.storage.sync.get({ lastReset: '' });
     if (lastReset !== today) {
-        await chrome.storage.local.set({ intake: 0, lastReset: today });
+        await chrome.storage.sync.set({ intake: 0, lastReset: today });
     }
 }
 async function loadState() {
     await ensureDailyReset();
-    const local = await chrome.storage.local.get({ intake: 0 });
+    const intakeState = await chrome.storage.sync.get({ intake: 0 });
     const sync = await chrome.storage.sync.get({
         goal: 2000,
         interval: 30,
@@ -43,7 +43,7 @@ async function loadState() {
         keepRemindingAfterGoal: true,
     });
     return {
-        intake: local.intake,
+        intake: intakeState.intake,
         goal: sync.goal,
         interval: sync.interval,
         notificationsEnabled: sync.notificationsEnabled,
@@ -102,9 +102,9 @@ function wireUiSound(element, eventName = 'click') {
 }
 // ── Water actions ─────────────────────────────────────────────────────────────
 async function addWater(amount) {
-    const { intake = 0 } = await chrome.storage.local.get({ intake: 0 });
+    const { intake = 0 } = await chrome.storage.sync.get({ intake: 0 });
     const newIntake = intake + amount;
-    await chrome.storage.local.set({ intake: newIntake });
+    await chrome.storage.sync.set({ intake: newIntake });
     const { goal = 2000, soundsEnabled = true } = await chrome.storage.sync.get({
         goal: 2000,
         soundsEnabled: true,
@@ -190,7 +190,7 @@ async function init() {
             chrome.runtime.sendMessage({ action: 'reschedule', interval: newInterval });
             currentInterval = newInterval;
         }
-        const { intake: current = 0 } = await chrome.storage.local.get({ intake: 0 });
+        const { intake: current = 0 } = await chrome.storage.sync.get({ intake: 0 });
         renderProgress(current, newGoal);
         const fb = document.getElementById('saveFeedback');
         fb.textContent = '✓ Settings saved!';
@@ -202,7 +202,7 @@ async function init() {
     document.getElementById('resetBtn').addEventListener('click', async () => {
         if (!confirm("Reset today's water intake to 0?"))
             return;
-        await chrome.storage.local.set({ intake: 0, lastReset: getToday() });
+        await chrome.storage.sync.set({ intake: 0, lastReset: getToday() });
         const { goal: g = 2000 } = await chrome.storage.sync.get({ goal: 2000 });
         renderProgress(0, g);
         playClickSound();
