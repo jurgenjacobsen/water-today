@@ -8,7 +8,7 @@
     "bundle": "powershell -ExecutionPolicy Bypass -File ./automation/package.ps1"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.268",
+    "@types/chrome": "^0.1.40",
     "typescript": "^5.4.5"
   }
 }
