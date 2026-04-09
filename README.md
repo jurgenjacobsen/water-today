@@ -1,6 +1,6 @@
 ![Repository Banner](/assets/banner.png)
 
-[![CI and Quality](https://github.com/jurgenjacobsen/sparrow/actions/workflows/ci-quality.yml/badge.svg)](https://github.com/jurgenjacobsen/sparrow/actions/workflows/ci-quality.yml)
+[![CI and Quality](https://github.com/jurgenjacobsen/water-today/actions/workflows/ci-quality.yml/badge.svg)](https://github.com/jurgenjacobsen/water-today/actions/workflows/ci-quality.yml)
 [![wakatime](https://wakatime.com/badge/user/010adc07-6382-419f-87bc-0b3f507ee495/project/fe6a0170-d663-4bd1-9e42-a50021043d0e.svg)](https://wakatime.com/badge/user/010adc07-6382-419f-87bc-0b3f507ee495/project/fe6a0170-d663-4bd1-9e42-a50021043d0e)
 ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/jurgenjacobsen/water-today/main)
 ![GitHub top language](https://img.shields.io/github/languages/top/jurgenjacobsen/water-today)
