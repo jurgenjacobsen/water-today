@@ -32,15 +32,14 @@ jobs:
           npm update --package-lock-only || true
 
       - name: Run AI Auto-Improvement
-        if: ${{ secrets.GEMINI_API_KEY != '' }}
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node automation/ai-improve.js
-
-      - name: Warning if GEMINI_API_KEY is missing
-        if: ${{ secrets.GEMINI_API_KEY == '' }}
         run: |
-          echo "::warning::GEMINI_API_KEY secret is missing. Skipping AI Auto-Improvement."
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "::warning::GEMINI_API_KEY secret is missing. Skipping AI Auto-Improvement."
+          else
+            node automation/ai-improve.js
+          fi
 
       - name: Ensure project still builds
         run: |
