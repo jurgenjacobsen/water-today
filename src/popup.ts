@@ -170,12 +170,59 @@ async function init(): Promise<void> {
   renderProgress(intake, goal);
   await updateNextReminder();
 
-  // Populate settings fields
-  (document.getElementById('intervalInput') as HTMLInputElement).value = String(interval);
-  (document.getElementById('goalInput') as HTMLInputElement).value = String(goal);
-  (document.getElementById('notificationsEnabled') as HTMLInputElement).checked = notificationsEnabled;
-  (document.getElementById('soundsEnabled') as HTMLInputElement).checked = soundsEnabled;
-  (document.getElementById('keepRemindingAfterGoal') as HTMLInputElement).checked = keepRemindingAfterGoal;
+  // Populate settings fields and track unsaved state
+  let savedSettings = {
+    interval,
+    goal,
+    notificationsEnabled,
+    soundsEnabled,
+    keepRemindingAfterGoal,
+  };
+
+  const intervalInput = document.getElementById('intervalInput') as HTMLInputElement;
+  const goalInput = document.getElementById('goalInput') as HTMLInputElement;
+  const notificationsInput = document.getElementById('notificationsEnabled') as HTMLInputElement;
+  const soundsInput = document.getElementById('soundsEnabled') as HTMLInputElement;
+  const keepRemindingInput = document.getElementById('keepRemindingAfterGoal') as HTMLInputElement;
+  const unsavedWarning = document.getElementById('unsavedWarning') as HTMLElement;
+  const saveBtn = document.getElementById('saveSettings') as HTMLButtonElement;
+
+  intervalInput.value = String(interval);
+  goalInput.value = String(goal);
+  notificationsInput.checked = notificationsEnabled;
+  soundsInput.checked = soundsEnabled;
+  keepRemindingInput.checked = keepRemindingAfterGoal;
+
+  function checkUnsavedChanges(): void {
+    const currentIntervalVal = parseInt(intervalInput.value, 10);
+    const currentGoalVal = parseInt(goalInput.value, 10);
+    const currentNotificationsEnabled = notificationsInput.checked;
+    const currentSoundsEnabled = soundsInput.checked;
+    const currentKeepRemindingAfterGoal = keepRemindingInput.checked;
+
+    const hasChanges =
+      currentIntervalVal !== savedSettings.interval ||
+      currentGoalVal !== savedSettings.goal ||
+      currentNotificationsEnabled !== savedSettings.notificationsEnabled ||
+      currentSoundsEnabled !== savedSettings.soundsEnabled ||
+      currentKeepRemindingAfterGoal !== savedSettings.keepRemindingAfterGoal;
+
+    if (hasChanges) {
+      unsavedWarning.classList.add('visible');
+      settingsToggle.classList.add('has-unsaved');
+      saveBtn.classList.add('pulse');
+    } else {
+      unsavedWarning.classList.remove('visible');
+      settingsToggle.classList.remove('has-unsaved');
+      saveBtn.classList.remove('pulse');
+    }
+  }
+
+  intervalInput.addEventListener('input', checkUnsavedChanges);
+  goalInput.addEventListener('input', checkUnsavedChanges);
+  notificationsInput.addEventListener('change', checkUnsavedChanges);
+  soundsInput.addEventListener('change', checkUnsavedChanges);
+  keepRemindingInput.addEventListener('change', checkUnsavedChanges);
 
   // Quick-add buttons
   document.querySelectorAll<HTMLButtonElement>('.quick-btn').forEach((btn) => {
@@ -211,18 +258,18 @@ async function init(): Promise<void> {
     settingsToggle.setAttribute('aria-label', isOpen ? 'Close settings' : 'Open settings');
   });
 
-  wireUiSound(document.getElementById('saveSettings'));
-  wireUiSound(document.getElementById('notificationsEnabled'), 'change');
-  wireUiSound(document.getElementById('soundsEnabled'), 'change');
-  wireUiSound(document.getElementById('keepRemindingAfterGoal'), 'change');
+  wireUiSound(saveBtn);
+  wireUiSound(notificationsInput, 'change');
+  wireUiSound(soundsInput, 'change');
+  wireUiSound(keepRemindingInput, 'change');
 
   // Save settings
-  document.getElementById('saveSettings')!.addEventListener('click', async () => {
-    const newInterval = parseInt((document.getElementById('intervalInput') as HTMLInputElement).value, 10);
-    const newGoal = parseInt((document.getElementById('goalInput') as HTMLInputElement).value, 10);
-    const newNotificationsEnabled = (document.getElementById('notificationsEnabled') as HTMLInputElement).checked;
-    const newSoundsEnabled = (document.getElementById('soundsEnabled') as HTMLInputElement).checked;
-    const newKeepRemindingAfterGoal = (document.getElementById('keepRemindingAfterGoal') as HTMLInputElement).checked;
+  saveBtn.addEventListener('click', async () => {
+    const newInterval = parseInt(intervalInput.value, 10);
+    const newGoal = parseInt(goalInput.value, 10);
+    const newNotificationsEnabled = notificationsInput.checked;
+    const newSoundsEnabled = soundsInput.checked;
+    const newKeepRemindingAfterGoal = keepRemindingInput.checked;
 
     if (isNaN(newInterval) || newInterval < 1 || newInterval > 480) return;
     if (isNaN(newGoal) || newGoal < 100 || newGoal > 10000) return;
@@ -234,6 +281,17 @@ async function init(): Promise<void> {
       soundsEnabled: newSoundsEnabled,
       keepRemindingAfterGoal: newKeepRemindingAfterGoal,
     });
+
+    savedSettings = {
+      interval: newInterval,
+      goal: newGoal,
+      notificationsEnabled: newNotificationsEnabled,
+      soundsEnabled: newSoundsEnabled,
+      keepRemindingAfterGoal: newKeepRemindingAfterGoal,
+    };
+
+    checkUnsavedChanges();
+
     if (newInterval !== currentInterval) {
       // Ask background to reschedule the alarm only when the interval changes
       chrome.runtime.sendMessage({ action: 'reschedule', interval: newInterval });
