@@ -35,11 +35,29 @@ function getToday(): string {
   return new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
 }
 
+async function clearHistoricalData(): Promise<void> {
+  const allowedKeys = new Set([
+    'intake',
+    'lastReset',
+    'interval',
+    'goal',
+    'notificationsEnabled',
+    'soundsEnabled',
+    'keepRemindingAfterGoal'
+  ]);
+  const allData = await chrome.storage.sync.get(null);
+  const keysToRemove = Object.keys(allData).filter(key => !allowedKeys.has(key));
+  if (keysToRemove.length > 0) {
+    await chrome.storage.sync.remove(keysToRemove);
+  }
+}
+
 async function ensureDailyReset(): Promise<void> {
   const today = getToday();
   const { lastReset = '' } = await chrome.storage.sync.get({ lastReset: '' }) as { lastReset: string };
   if (lastReset !== today) {
     await chrome.storage.sync.set({ intake: 0, lastReset: today });
+    await clearHistoricalData();
   }
 }
 
