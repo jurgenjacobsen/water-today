@@ -1,6 +1,6 @@
 {
   "name": "water-today",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "scripts": {
     "build": "tsc",
@@ -8,7 +8,7 @@
     "bundle": "powershell -ExecutionPolicy Bypass -File ./automation/package.ps1"
   },
   "devDependencies": {
-    "@types/chrome": "^0.1.40",
+    "@types/chrome": "^0.1.43",
     "typescript": "^6.0.2"
   }
 }
